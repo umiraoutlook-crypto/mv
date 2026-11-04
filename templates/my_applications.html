@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}My Job Applications - Job Portal{% endblock %}
+
+{% block content %}
+<div class="row py-2">
+    <div class="col-12">
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
+            <div>
+                <h1 class="fw-bold text-dark mb-1">My Submitted Applications</h1>
+                <p class="text-muted small mb-0">Track the review status and stages of all your job submissions in real-time.</p>
+            </div>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-primary">
+                <i class="bi bi-search me-1"></i> Browse More Openings
+            </a>
+        </div>
+
+        {% if applications %}
+        <div class="custom-card">
+            <div class="table-responsive">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Applied Position</th>
+                            <th>Department & Location</th>
+                            <th>Applied Date</th>
+                            <th>Current Status</th>
+                            <th>Resume</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td data-label="Position">
+                                <div class="fw-bold text-dark">
+                                    <a href="{{ url_for('opening_detail', id=app.opening_id) }}" class="text-decoration-none text-dark hover-primary">
+                                        {{ app.opening_title }}
+                                    </a>
+                                </div>
+                            </td>
+                            <td data-label="Department & Location">
+                                <span class="tag-pill bg-light text-secondary border me-1">{{ app.opening_department }}</span>
+                                <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ app.opening_location }}</span>
+                            </td>
+                            <td data-label="Applied Date">
+                                <span class="small text-muted">{{ app.applied_at|format_date('%B %d, %Y') }}</span>
+                            </td>
+                            <td data-label="Status">
+                                {% if app.status == 'Submitted' %}
+                                    <span class="badge-status status-submitted"><i class="bi bi-clock-history"></i> Submitted</span>
+                                {% elif app.status == 'Under Review' %}
+                                    <span class="badge-status status-under-review"><i class="bi bi-search"></i> Under Review</span>
+                                {% elif app.status == 'Shortlisted' %}
+                                    <span class="badge-status status-shortlisted"><i class="bi bi-star-fill"></i> Shortlisted</span>
+                                {% elif app.status == 'Interview Scheduled' %}
+                                    <span class="badge-status status-interview-scheduled"><i class="bi bi-calendar-event"></i> Interview</span>
+                                {% elif app.status == 'Accepted' or app.status == 'Accepted / Offered' %}
+                                    <span class="badge-status status-accepted"><i class="bi bi-check-circle-fill"></i> Offered / Accepted</span>
+                                {% elif app.status == 'Rejected' %}
+                                    <span class="badge-status status-rejected"><i class="bi bi-x-circle-fill"></i> Not Selected</span>
+                                {% else %}
+                                    <span class="badge-status bg-light text-dark">{{ app.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td data-label="Resume">
+                                {% if app.resume %}
+                                    <a href="{{ app.resume }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="View Submitted Resume">
+                                        <i class="bi bi-file-earmark-pdf text-danger me-1"></i> View CV
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small">No file</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end" data-label="Action">
+                                {% if app.status in ['Submitted', 'Under Review'] %}
+                                    <form method="POST" action="{{ url_for('withdraw_application', id=app._id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to withdraw this application?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Withdraw Application">
+                                            <i class="bi bi-trash"></i> Withdraw
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted small">In Process</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="custom-card p-5 text-center my-3">
+            <i class="bi bi-journal-x fs-1 text-muted mb-3 d-block"></i>
+            <h4 class="fw-bold text-dark">No Applications Found</h4>
+            <p class="text-muted">You haven't submitted any job applications yet.</p>
+            <a href="{{ url_for('home') }}" class="btn btn-primary mt-2">
+                <i class="bi bi-briefcase me-1"></i> Find and Apply for Jobs
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

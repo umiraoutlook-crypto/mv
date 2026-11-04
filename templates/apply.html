@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for {{ opening.title }} - Job Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2">
+    <div class="col-lg-8">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb small">
+                <li class="breadcrumb-item"><a href="{{ url_for('home') }}" class="text-decoration-none">Openings</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('opening_detail', id=opening._id) }}" class="text-decoration-none">{{ opening.title }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Application Form</li>
+            </ol>
+        </nav>
+
+        <div class="custom-card p-4 p-md-5">
+            <div class="d-flex align-items-center gap-3 pb-3 mb-4 border-bottom">
+                <div class="d-inline-flex p-3 rounded-3 bg-primary-light text-primary">
+                    <i class="bi bi-file-earmark-arrow-up-fill fs-3"></i>
+                </div>
+                <div>
+                    <span class="badge bg-primary-subtle text-primary mb-1">{{ opening.department or 'General' }}</span>
+                    <h2 class="fw-bold text-dark mb-0">Apply for {{ opening.title }}</h2>
+                </div>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" action="{{ url_for('apply', id=opening._id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="name">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ form.name.data or '' }}" required>
+                        {% if form.name.errors %}
+                            <div class="text-danger small mt-1">{{ form.name.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="email">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ form.email.data or '' }}" required>
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="phone">Phone Number</label>
+                        <input type="text" class="form-control" id="phone" name="phone" placeholder="+1 (555) 000-0000" value="{{ form.phone.data or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="portfolio_url">LinkedIn / Portfolio URL</label>
+                        <input type="text" class="form-control" id="portfolio_url" name="portfolio_url" placeholder="https://linkedin.com/in/username" value="{{ form.portfolio_url.data or '' }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="resume">Upload Resume / CV <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control" id="resume" name="resume" accept=".pdf,.doc,.docx" required>
+                    <div class="form-text text-muted">Accepted file types: PDF, DOCX (Max size: 10MB)</div>
+                    {% if form.resume.errors %}
+                        <div class="text-danger small mt-1">{{ form.resume.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="cover_letter">Cover Letter / Pitch <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="cover_letter" name="cover_letter" rows="5" placeholder="Share why you're a great fit for this position, relevant achievements, and when you can start..." required>{{ form.cover_letter.data or '' }}</textarea>
+                    {% if form.cover_letter.errors %}
+                        <div class="text-danger small mt-1">{{ form.cover_letter.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                    <a href="{{ url_for('opening_detail', id=opening._id) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 py-2">
+                        <i class="bi bi-send-fill me-1"></i> Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Career Openings - Job Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-banner">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <span class="badge bg-white bg-opacity-20 text-white mb-3 px-3 py-2 rounded-pill">
+                <i class="bi bi-stars text-warning me-1"></i> We're Hiring Top Talent
+            </span>
+            <h1 class="display-5 fw-bold mb-3">Find Your Next Big Opportunity</h1>
+            <p class="lead text-white-50 mb-4" style="max-width: 620px;">
+                Explore exciting roles across engineering, design, product, and operations. Apply in minutes with your resume.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="#openings-section" class="btn btn-light px-4 py-2 fw-semibold text-primary">
+                    <i class="bi bi-arrow-down-circle me-1"></i> View <span id="visible-jobs-count">{{ openings|length }}</span> Openings
+                </a>
+                {% if not current_user.is_authenticated %}
+                <form method="POST" action="{{ url_for('admin_enter') }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-light px-3 py-2 fw-medium">
+                        <i class="bi bi-shield-lock me-1"></i> Admin Portal
+                    </button>
+                </form>
+                {% elif current_user.role == 'admin' %}
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning px-3 py-2 fw-semibold text-dark">
+                    <i class="bi bi-speedometer2 me-1"></i> Go to Admin Dashboard
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter Controls -->
+<div class="custom-card p-3 mb-4" id="openings-section">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-7 col-lg-8">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control border-start-0 ps-0" id="job-search-input" placeholder="Search by job title, location, or keywords...">
+            </div>
+        </div>
+        <div class="col-md-5 col-lg-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-filter"></i></span>
+                <select class="form-select border-start-0" id="job-dept-filter">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                        <option value="{{ dept|lower }}">{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Job Cards Grid -->
+{% if openings %}
+<div class="row g-4" id="jobs-grid">
+    {% for opening in openings %}
+    <div class="col-md-6 col-lg-4 job-card-wrapper" 
+         data-title="{{ opening.title|lower }}" 
+         data-dept="{{ opening.department|lower if opening.department else 'engineering' }}" 
+         data-desc="{{ opening.description|lower }}" 
+         data-location="{{ opening.location|lower if opening.location else '' }}">
+        <div class="custom-card job-card p-4">
+            <div class="card-body p-0">
+                <!-- Top Badges -->
+                <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
+                    <span class="tag-pill bg-primary-light text-primary fw-semibold">
+                        <i class="bi bi-building me-1"></i>{{ opening.department or 'General' }}
+                    </span>
+                    <span class="tag-pill bg-light text-secondary border">
+                        {{ opening.job_type or 'Full-Time' }}
+                    </span>
+                </div>
+
+                <!-- Job Title -->
+                <h5 class="fw-bold text-dark mb-2">
+                    <a href="{{ url_for('opening_detail', id=opening._id) }}" class="text-decoration-none text-dark hover-primary">
+                        {{ opening.title }}
+                    </a>
+                </h5>
+
+                <!-- Location & Salary -->
+                <div class="d-flex flex-wrap gap-2 text-muted small mb-3">
+                    {% if opening.location %}
+                    <span><i class="bi bi-geo-alt me-1 text-danger"></i>{{ opening.location }}</span>
+                    {% endif %}
+                    {% if opening.salary_range %}
+                    <span><i class="bi bi-cash-stack me-1 text-success"></i>{{ opening.salary_range }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Description Snippet -->
+                <p class="text-secondary small mb-4 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                    {{ opening.description }}
+                </p>
+
+                <!-- Footer Info & Action -->
+                <div class="pt-3 border-top d-flex justify-content-between align-items-center mt-auto">
+                    <div class="small text-muted">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        <span>Deadline: {{ opening.deadline|format_date('%b %d') }}</span>
+                    </div>
+
+                    {% if opening._id|string in applied_ids %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                            <i class="bi bi-check2 me-1"></i> Applied
+                        </span>
+                    {% else %}
+                        <a href="{{ url_for('opening_detail', id=opening._id) }}" class="btn btn-sm btn-primary">
+                            Details <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- No Filter Results Message -->
+<div id="no-search-results" class="custom-card p-5 text-center my-4" style="display: none;">
+    <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
+    <h5 class="fw-bold text-dark">No matching job openings found</h5>
+    <p class="text-muted small">Try tweaking your search keywords or choosing a different department.</p>
+</div>
+
+{% else %}
+<div class="custom-card p-5 text-center my-4">
+    <i class="bi bi-briefcase fs-1 text-muted mb-3 d-block"></i>
+    <h4 class="fw-bold text-dark">No Openings Currently Available</h4>
+    <p class="text-muted">Check back soon for new career opportunities or check the Admin Portal to post jobs.</p>
+    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+        <a href="{{ url_for('create_opening') }}" class="btn btn-primary mt-2">
+            <i class="bi bi-plus-circle me-1"></i> Post First Job Opening
+        </a>
+    {% else %}
+        <form method="POST" action="{{ url_for('admin_enter') }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-primary mt-2">
+                <i class="bi bi-shield-lock me-1"></i> Enter Admin Portal
+            </button>
+        </form>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

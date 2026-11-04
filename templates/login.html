@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - Job Portal & Admin Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="custom-card p-4 p-md-5">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex p-3 rounded-circle bg-primary-light text-primary mb-3">
+                    <i class="bi bi-shield-lock-fill fs-2"></i>
+                </div>
+                {% if request.args.get('role') == 'admin' %}
+                <span class="badge bg-primary mb-2"><i class="bi bi-shield-fill-check me-1"></i>Admin Portal</span>
+                <h2 class="fw-bold text-dark mb-1">Enter the Admin Portal</h2>
+                <p class="text-muted small mb-0">Use one-click access below — no typing required.</p>
+                {% else %}
+                <h2 class="fw-bold text-dark mb-1">Welcome Back</h2>
+                <p class="text-muted small">Sign in to your candidate account or the Admin Portal</p>
+                {% endif %}
+            </div>
+
+            <form method="POST" action="{{ url_for('admin_enter') }}" class="mb-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-admin w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <span>Enter Admin Portal Now</span>
+                </button>
+                <div class="text-center text-muted small mt-2">Instant demo access · admin / admin123</div>
+            </form>
+
+            <!-- Quick Demo Credentials Banner -->
+            <div class="quick-demo-box mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="small fw-bold text-dark"><i class="bi bi-key-fill text-warning me-1"></i> Or sign in manually:</span>
+                    <span class="badge bg-primary-subtle text-primary border">1-Click Fill</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary flex-fill text-start py-1" id="fill-admin-creds">
+                        <i class="bi bi-shield-fill-check text-indigo me-1"></i>
+                        <strong>Fill Admin</strong>
+                        <div class="text-muted" style="font-size: 0.72rem;">admin / admin123</div>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary flex-fill text-start py-1" id="fill-user-creds">
+                        <i class="bi bi-person-fill text-secondary me-1"></i>
+                        <strong>Candidate</strong>
+                        <div class="text-muted" style="font-size: 0.72rem;">Fill registered email</div>
+                    </button>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('login', next=next_page) }}" id="login-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="mb-3">
+                    <label class="form-label" for="login-email">Email or Admin Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-secondary"></i></span>
+                        <input type="text" class="form-control border-start-0" id="login-email" name="email" placeholder="e.g. admin or candidate@example.com" value="{{ request.args.get('email', '') }}" required autofocus>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="form-label mb-0" for="login-password">Password</label>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-secondary"></i></span>
+                        <input type="password" class="form-control border-start-0" id="login-password" name="password" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fs-6 mb-3 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Sign In</span>
+                </button>
+            </form>
+
+            <div class="text-center pt-2 border-top">
+                <p class="text-muted small mb-0">
+                    Looking to apply for jobs? 
+                    <a href="{{ url_for('register') }}" class="text-primary fw-semibold text-decoration-none">Create a Candidate Account</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

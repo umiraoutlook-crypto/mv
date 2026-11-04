@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit Opening: {{ opening.title }}{% else %}Post New Opening{% endif %} - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2">
+    <div class="col-lg-9">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb small">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}" class="text-decoration-none">Admin Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% if is_edit %}Edit Job Opening{% else %}Create Opening{% endif %}</li>
+            </ol>
+        </nav>
+
+        <div class="custom-card p-4 p-md-5">
+            <div class="d-flex align-items-center gap-3 pb-3 mb-4 border-bottom">
+                <div class="d-inline-flex p-3 rounded-3 bg-primary-light text-primary">
+                    <i class="bi bi-briefcase-fill fs-3"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold text-dark mb-0">{% if is_edit %}Edit Job Opening{% else %}Post a New Job Opening{% endif %}</h2>
+                    <p class="text-muted small mb-0">Fill in the role details to publish to the candidate job board.</p>
+                </div>
+            </div>
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="mb-3">
+                    <label class="form-label" for="title">Job Title <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="e.g. Senior Backend Python Developer" value="{{ form.title.data or '' }}" required>
+                    {% if form.title.errors %}
+                        <div class="text-danger small mt-1">{{ form.title.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="department">Department <span class="text-danger">*</span></label>
+                        <select class="form-select" id="department" name="department" required>
+                            {% for val, label in form.department.choices %}
+                                <option value="{{ val }}" {% if form.department.data == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="job_type">Employment / Workplace Type <span class="text-danger">*</span></label>
+                        <select class="form-select" id="job_type" name="job_type" required>
+                            {% for val, label in form.job_type.choices %}
+                                <option value="{{ val }}" {% if form.job_type.data == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="location">Location <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="location" name="location" placeholder="e.g. Remote or London, UK" value="{{ form.location.data or '' }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="experience_level">Experience Level</label>
+                        <select class="form-select" id="experience_level" name="experience_level">
+                            {% for val, label in form.experience_level.choices %}
+                                <option value="{{ val }}" {% if form.experience_level.data == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="salary_range">Salary Range</label>
+                        <input type="text" class="form-control" id="salary_range" name="salary_range" placeholder="e.g. $100k - $130k / yr" value="{{ form.salary_range.data or '' }}">
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="deadline">Application Deadline <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="deadline" name="deadline" value="{{ form.deadline.data or '' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="status">Posting Status</label>
+                        <select class="form-select" id="status" name="status">
+                            {% for val, label in form.status.choices %}
+                                <option value="{{ val }}" {% if form.status.data == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="description">Job Description & Responsibilities <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="description" name="description" rows="5" placeholder="Detail the day-to-day role responsibilities, mission, team structure..." required>{{ form.description.data or '' }}</textarea>
+                    {% if form.description.errors %}
+                        <div class="text-danger small mt-1">{{ form.description.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="requirements">Key Requirements & Desired Qualifications</label>
+                    <textarea class="form-control" id="requirements" name="requirements" rows="4" placeholder="List required skills, technologies, education, certifications...">{{ form.requirements.data or '' }}</textarea>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 py-2">
+                        <i class="bi bi-check-circle me-1"></i>
+                        <span>{% if is_edit %}Save Changes{% else %}Publish Opening{% endif %}</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

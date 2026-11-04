@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Application Review: {{ application.name }} - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="row g-4 py-2">
+    <!-- Breadcrumb -->
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-0">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}" class="text-decoration-none">Admin Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Application: {{ application.name }}</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Left Column: Candidate Information & Cover Letter -->
+    <div class="col-lg-7">
+        <!-- Candidate Profile Card -->
+        <div class="custom-card p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-inline-flex p-3 rounded-circle bg-primary-light text-primary">
+                        <i class="bi bi-person-badge-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold text-dark mb-0">{{ application.name }}</h3>
+                        <div class="text-muted small"><i class="bi bi-envelope me-1"></i>{{ application.email }}</div>
+                    </div>
+                </div>
+                <div>
+                    {% if application.status == 'Submitted' %}
+                        <span class="badge-status status-submitted"><i class="bi bi-clock-history"></i> Submitted</span>
+                    {% elif application.status == 'Under Review' %}
+                        <span class="badge-status status-under-review"><i class="bi bi-search"></i> Under Review</span>
+                    {% elif application.status == 'Shortlisted' %}
+                        <span class="badge-status status-shortlisted"><i class="bi bi-star-fill"></i> Shortlisted</span>
+                    {% elif application.status == 'Interview Scheduled' %}
+                        <span class="badge-status status-interview-scheduled"><i class="bi bi-calendar-event"></i> Interview</span>
+                    {% elif application.status == 'Accepted' or application.status == 'Accepted / Offered' %}
+                        <span class="badge-status status-accepted"><i class="bi bi-check-circle-fill"></i> Offered</span>
+                    {% elif application.status == 'Rejected' %}
+                        <span class="badge-status status-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span>
+                    {% else %}
+                        <span class="badge-status bg-light text-dark">{{ application.status }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+                {% if application.phone %}
+                <div class="col-sm-6">
+                    <span class="text-muted small d-block">Phone:</span>
+                    <span class="fw-medium text-dark"><i class="bi bi-telephone me-1 text-primary"></i>{{ application.phone }}</span>
+                </div>
+                {% endif %}
+                {% if application.portfolio_url %}
+                <div class="col-sm-6">
+                    <span class="text-muted small d-block">Portfolio / Profile:</span>
+                    <a href="{{ application.portfolio_url }}" target="_blank" class="fw-medium text-decoration-none">
+                        <i class="bi bi-link-45deg me-1"></i>{{ application.portfolio_url }}
+                    </a>
+                </div>
+                {% endif %}
+                <div class="col-sm-6">
+                    <span class="text-muted small d-block">Applied Date:</span>
+                    <span class="text-dark"><i class="bi bi-calendar3 me-1 text-secondary"></i>{{ application.applied_at|format_date('%B %d, %Y at %I:%M %p') }}</span>
+                </div>
+                {% if opening %}
+                <div class="col-sm-6">
+                    <span class="text-muted small d-block">Applied Position:</span>
+                    <a href="{{ url_for('opening_detail', id=opening._id) }}" class="fw-bold text-primary text-decoration-none">
+                        {{ opening.title }}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Cover Letter Card -->
+        <div class="custom-card p-4 mb-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-chat-left-text-fill text-primary me-2"></i>Cover Letter / Candidate Pitch</h5>
+            <div class="p-3 rounded bg-light text-dark" style="white-space: pre-line; line-height: 1.7; font-size: 0.95rem;">
+                {{ application.cover_letter }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Status Workflow & Resume Action -->
+    <div class="col-lg-5">
+        <!-- Resume File Card -->
+        <div class="custom-card p-4 mb-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Submitted Resume</h5>
+            {% if application.resume %}
+                <div class="p-3 border rounded-3 bg-light d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-file-earmark-text fs-2 text-danger"></i>
+                        <div>
+                            <div class="fw-bold text-dark small">Candidate CV Document</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Verified upload</div>
+                        </div>
+                    </div>
+                    <a href="{{ application.resume }}" target="_blank" class="btn btn-primary btn-sm">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Open Resume
+                    </a>
+                </div>
+            {% else %}
+                <div class="alert alert-warning small mb-0">No resume document attached.</div>
+            {% endif %}
+        </div>
+
+        <!-- Status Management Card -->
+        <div class="custom-card p-4 mb-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-sliders text-primary me-2"></i>Recruitment Stage & Notes</h5>
+            
+            <form method="POST" action="{{ url_for('update_application_status', id=application._id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="mb-3">
+                    <label class="form-label" for="status">Update Hiring Stage</label>
+                    <select class="form-select" id="status" name="status" required>
+                        {% for val, label in status_form.status.choices %}
+                            <option value="{{ val }}" {% if application.status == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="admin_notes">Internal Admin Notes / Feedback</label>
+                    <textarea class="form-control" id="admin_notes" name="admin_notes" rows="4" placeholder="Notes on candidate interview, strengths, salary expectation, team feedback...">{{ application.admin_notes or '' }}</textarea>
+                    <div class="form-text small text-muted">Visible only to administrators.</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2">
+                    <i class="bi bi-check2-circle me-1"></i> Save Status & Notes
+                </button>
+            </form>
+        </div>
+
+        <!-- Back & Dangerous Actions -->
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+            <form method="POST" action="{{ url_for('delete_application', id=application._id) }}" onsubmit="return confirm('Permanently delete this candidate application?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-trash me-1"></i> Delete Application
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

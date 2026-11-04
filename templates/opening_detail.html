@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}{{ opening.title }} - Job Portal{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Main Job Description -->
+    <div class="col-lg-8">
+        <div class="custom-card p-4 p-md-5 mb-4">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                <span class="tag-pill bg-primary-light text-primary fw-semibold">
+                    <i class="bi bi-building me-1"></i>{{ opening.department or 'General' }}
+                </span>
+                <span class="tag-pill bg-light text-secondary border">
+                    {{ opening.job_type or 'Full-Time' }}
+                </span>
+                {% if opening.status == 'closed' %}
+                    <span class="badge bg-danger-subtle text-danger border">Position Closed</span>
+                {% else %}
+                    <span class="badge bg-success-subtle text-success border">Actively Hiring</span>
+                {% endif %}
+            </div>
+
+            <h1 class="fw-bold text-dark mb-3">{{ opening.title }}</h1>
+
+            <div class="d-flex flex-wrap gap-3 text-muted small mb-4 pb-3 border-bottom">
+                {% if opening.location %}
+                    <span><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ opening.location }}</span>
+                {% endif %}
+                {% if opening.salary_range %}
+                    <span><i class="bi bi-cash-stack text-success me-1"></i>{{ opening.salary_range }}</span>
+                {% endif %}
+                {% if opening.experience_level %}
+                    <span><i class="bi bi-mortarboard text-primary me-1"></i>{{ opening.experience_level }}</span>
+                {% endif %}
+                <span><i class="bi bi-clock-history me-1"></i>Posted {{ opening.created_at|format_date('%b %d, %Y') }}</span>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <h4 class="fw-bold text-dark mb-3">About the Role</h4>
+                <div class="text-secondary" style="white-space: pre-line; line-height: 1.7;">
+                    {{ opening.description }}
+                </div>
+            </div>
+
+            <!-- Requirements -->
+            {% if opening.requirements %}
+            <div class="mb-4 pt-3 border-top">
+                <h4 class="fw-bold text-dark mb-3">Key Requirements & Skills</h4>
+                <div class="text-secondary" style="white-space: pre-line; line-height: 1.7;">
+                    {{ opening.requirements }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Bottom Action CTA -->
+            <div class="pt-4 border-top mt-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to All Jobs
+                </a>
+
+                {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('edit_opening', id=opening._id) }}" class="btn btn-warning">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Opening
+                        </a>
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-dark">
+                            <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+                        </a>
+                    </div>
+                {% elif applied %}
+                    <div class="alert alert-info py-2 px-3 mb-0 d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-primary"></i>
+                        <span>You applied for this position!</span>
+                        <a href="{{ url_for('my_applications') }}" class="alert-link ms-2">View Status</a>
+                    </div>
+                {% elif opening.status == 'closed' %}
+                    <button class="btn btn-secondary" disabled>Applications Closed</button>
+                {% elif current_user.is_authenticated %}
+                    <a href="{{ url_for('apply', id=opening._id) }}" class="btn btn-primary px-4 py-2">
+                        <i class="bi bi-send-fill me-1"></i> Apply for this Position
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login', next=url_for('apply', id=opening._id)) }}" class="btn btn-primary px-4 py-2">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Apply
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Overview -->
+    <div class="col-lg-4">
+        <div class="custom-card p-4 mb-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle text-primary me-2"></i>Job Overview</h5>
+            <ul class="list-unstyled mb-0">
+                <li class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted small">Department</span>
+                    <span class="fw-medium small text-dark">{{ opening.department or 'General' }}</span>
+                </li>
+                <li class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted small">Workplace Type</span>
+                    <span class="fw-medium small text-dark">{{ opening.job_type or 'Full-Time' }}</span>
+                </li>
+                <li class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted small">Location</span>
+                    <span class="fw-medium small text-dark">{{ opening.location or 'Remote' }}</span>
+                </li>
+                <li class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted small">Experience</span>
+                    <span class="fw-medium small text-dark">{{ opening.experience_level or 'Mid Level' }}</span>
+                </li>
+                {% if opening.salary_range %}
+                <li class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted small">Compensation</span>
+                    <span class="fw-medium small text-dark">{{ opening.salary_range }}</span>
+                </li>
+                {% endif %}
+                <li class="d-flex justify-content-between py-2">
+                    <span class="text-muted small">Deadline</span>
+                    <span class="fw-semibold small text-danger">{{ opening.deadline|format_date('%B %d, %Y') }}</span>
+                </li>
+            </ul>
+
+            {% if days_left is not none %}
+            <div class="mt-3 p-2 text-center rounded bg-light small text-secondary">
+                <i class="bi bi-hourglass-split me-1 text-warning"></i>
+                {% if days_left > 0 %}
+                    <strong>{{ days_left }} days</strong> left to apply
+                {% else %}
+                    Deadline reaches today
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Help Card -->
+        <div class="custom-card p-4 bg-light border-0">
+            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-check text-success me-2"></i>Recruitment Notice</h6>
+            <p class="text-muted small mb-0">
+                Applications are reviewed directly by our recruitment team. Please ensure your contact details and resume link are up to date.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
